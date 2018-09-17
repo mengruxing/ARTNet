@@ -6,6 +6,12 @@ import fnmatch
 import os
 import random
 
+from utils import PROJECT_PATH
+
+
+def get_split_path(*paths):
+    return os.path.join(PROJECT_PATH, 'splits', *paths)
+
 
 def parse_directory_rgb(path, rgb_prefix='img_'):
     """
@@ -157,7 +163,7 @@ def parse_kinetics():
         label = int(items[1])
         return vid, label
 
-    val_list = [line2rec(line) for line in open('data/kinetics/val_list2.txt')]
+    val_list = [line2rec(line) for line in open(get_split_path('kinetics', 'val_list2.txt'))]
     return val_list
 
 
@@ -167,7 +173,7 @@ def parse_kinetics_test(test_list):
 
 
 def parse_ucf_splits():
-    class_ind = [x.strip().split() for x in open('data/ucf101_splits/classInd.txt')]
+    class_ind = [x.strip().split() for x in open(get_split_path('ucf101_splits', 'classInd.txt'))]
     class_mapping = {x[1]: int(x[0]) - 1 for x in class_ind}
 
     def line2rec(line):
@@ -178,18 +184,18 @@ def parse_ucf_splits():
 
     splits = []
     for i in xrange(1, 4):
-        train_list = [line2rec(x) for x in open('data/ucf101_splits/trainlist{:02d}.txt'.format(i))]
-        test_list = [line2rec(x) for x in open('data/ucf101_splits/testlist{:02d}.txt'.format(i))]
+        train_list = [line2rec(x) for x in open(get_split_path('ucf101_splits', 'trainlist{:02d}.txt'.format(i)))]
+        test_list = [line2rec(x) for x in open(get_split_path('ucf101_splits', 'testlist{:02d}.txt'.format(i)))]
         splits.append((train_list, test_list))
     return splits
 
 
 def parse_hmdb51_splits():
     # load split file
-    class_files = glob.glob('data/hmdb51_splits/*split*.txt')
+    class_files = glob.glob(get_split_path('hmdb51_splits', '*split*.txt'))
 
     # load class list
-    class_list = [x.strip() for x in open('data/hmdb51_splits/class_list.txt')]
+    class_list = [x.strip() for x in open(get_split_path('hmdb51_splits', 'class_list.txt'))]
     class_dict = {x: i for i, x in enumerate(class_list)}
 
     def parse_class_file(filename):
