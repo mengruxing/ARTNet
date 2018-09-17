@@ -1,12 +1,16 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 """
 This module provides some utils for calculating metrics
 """
+
 import numpy as np
 from sklearn.metrics import average_precision_score, confusion_matrix
 
 
 def softmax(raw_score, T=1):
-    exp_s = np.exp((raw_score - raw_score.max(axis=-1)[..., None])*T)
+    exp_s = np.exp((raw_score - raw_score.max(axis=-1)[..., None]) * T)
     sum_s = exp_s.sum(axis=-1)
     return exp_s / sum_s[..., None]
 
@@ -28,14 +32,11 @@ def top_3_accuracy(score_dict, video_list):
 def top_k_accuracy(score_dict, video_list, k):
     video_labels = [set([i.num_label for i in v.instances]) for v in video_list]
 
-    video_top_k_acc = np.array(
-        [top_k_hit(lb, score_dict[v.id], k=k) for v, lb in zip(video_list, video_labels)
-         if v.id in score_dict])
+    video_top_k_acc = np.array([top_k_hit(lb, score_dict[v.id], k=k) for v, lb in zip(video_list, video_labels) if v.id in score_dict])
 
     tmp = video_top_k_acc.sum(axis=0).astype(float)
-    top_k_acc = tmp[0] / tmp[1]
 
-    return top_k_acc
+    return tmp[0] / tmp[1]
 
 
 def video_mean_ap(score_dict, video_list):
@@ -57,4 +58,4 @@ def mean_class_accuracy(scores, labels):
     cls_cnt = cf.sum(axis=1)
     cls_hit = np.diag(cf)
 
-    return np.mean(cls_hit/cls_cnt)
+    return np.mean(cls_hit / cls_cnt)

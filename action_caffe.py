@@ -1,11 +1,20 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import os
 import sys
-
-
-import caffe
-from caffe.io import oversample
-import numpy as np
-from utils.io import fast_list2arr, flow_stack_oversample, c3d_flow_stack_oversample, c3d_rgb_stack_oversample
 import cv2
+import numpy as np
+
+from utils.io import fast_list2arr, flow_stack_oversample, c3d_flow_stack_oversample, c3d_rgb_stack_oversample
+from utils import PROJECT_PATH
+sys.path.insert(0, os.path.join(PROJECT_PATH, 'lib', 'python'))
+try:
+    import caffe
+    from caffe.io import oversample
+except ImportError:
+    raise
+sys.path.pop(0)
 
 
 class CaffeNet(object):
@@ -23,18 +32,19 @@ class CaffeNet(object):
         transformer = caffe.io.Transformer({'data': input_shape})
 
         if self._net.blobs['data'].data.shape[1] == 3:
-            #transformer.set_transpose('data', (0, 3, 1, 2))  # move image channels to outermost dimension
-            #transformer.set_mean('data', np.array([104, 117, 123]))  # subtract the dataset-mean value in each channel
-	    pass
+            # transformer.set_transpose('data', (0, 3, 1, 2))  # move image channels to outermost dimension
+            # transformer.set_mean('data', np.array([104, 117, 123]))  # subtract the dataset-mean value in each channel
+            pass
         else:
-            pass # non RGB data need not use transformer
+            pass  # non RGB data need not use transformer
 
         self._transformer = transformer
 
         self._sample_shape = self._net.blobs['data'].data.shape
-	print self._sample_shape
+        print self._sample_shape
 
-    def predict_single_frame(self, frame, score_name, over_sample=True, multiscale=None, frame_size=None, attention_name=None):
+    def predict_single_frame(self, frame, score_name, over_sample=True, multiscale=None, frame_size=None,
+                             attention_name=None):
 
         if frame_size is not None:
             frame = [cv2.resize(x, frame_size) for x in frame]
@@ -45,7 +55,7 @@ class CaffeNet(object):
             else:
                 os_frame = []
                 for scale in multiscale:
-                    resized_frame = [cv2.resize(x, (0,0), fx=1.0/scale, fy=1.0/scale) for x in frame]
+                    resized_frame = [cv2.resize(x, (0, 0), fx=1.0 / scale, fy=1.0 / scale) for x in frame]
                     os_frame.extend(oversample(resized_frame, (self._sample_shape[2], self._sample_shape[3])))
         else:
             os_frame = fast_list2arr(frame)
@@ -55,7 +65,7 @@ class CaffeNet(object):
         self._net.blobs['data'].reshape(*data.shape)
         self._net.reshape()
         if attention_name is None:
-            out = self._net.forward(blobs=[score_name,], data=data)
+            out = self._net.forward(blobs=[score_name, ], data=data)
             return out[score_name].copy()
         else:
             out = self._net.forward(blobs=[score_name, attention_name], data=data)
@@ -78,7 +88,7 @@ class CaffeNet(object):
         self._net.blobs['data'].reshape(*data.shape)
         self._net.reshape()
         if attention_name is None:
-            out = self._net.forward(blobs=[score_name,], data=data)
+            out = self._net.forward(blobs=[score_name, ], data=data)
             return out[score_name].copy()
         else:
             out = self._net.forward(blobs=[score_name, attention_name], data=data)
@@ -96,11 +106,11 @@ class CaffeNet(object):
         else:
             os_frame = fast_list2arr([frame])
 
-        data = os_frame - np.float32([104.0,117.0,123.0]);
-	data = np.transpose(data, [0,4,1,2,3])
+        data = os_frame - np.float32([104.0, 117.0, 123.0]);
+        data = np.transpose(data, [0, 4, 1, 2, 3])
 
         self._net.blobs['data'].data[...] = data.copy()
-	self._net.forward()
+        self._net.forward()
         out = self._net.blobs[score_name].data.copy()
         return out.copy()
 
@@ -116,10 +126,10 @@ class CaffeNet(object):
         else:
             os_frame = fast_list2arr([frame])
 
-        data = os_frame - np.float32(128.0);
-	data = np.transpose(data, [0,4,1,2,3])
+        data = os_frame - np.float32(128.0)
+        data = np.transpose(data, [0, 4, 1, 2, 3])
 
         self._net.blobs['data'].data[...] = data.copy()
-	self._net.forward()
+        self._net.forward()
         out = self._net.blobs[score_name].data.copy()
         return out.copy()

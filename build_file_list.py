@@ -1,10 +1,10 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import argparse
 import os
-import sys
 
-sys.path.append('.')
-from pyActionRecog import parse_directory, build_split_list
-from pyActionRecog import parse_split_file
+from benchmark_db import parse_directory, build_split_list, parse_split_file
 
 parser = argparse.ArgumentParser()
 parser.add_argument('dataset', type=str, choices=['ucf101', 'hmdb51'])

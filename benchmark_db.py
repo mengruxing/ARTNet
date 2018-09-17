@@ -1,7 +1,11 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import glob
 import fnmatch
 import os
 import random
+
 
 def parse_directory_rgb(path, rgb_prefix='img_'):
     """
@@ -12,15 +16,15 @@ def parse_directory_rgb(path, rgb_prefix='img_'):
 
     def count_files(directory, prefix_list):
         lst = os.listdir(directory)
-        cnt_list = [len(fnmatch.filter(lst, x+'*')) for x in prefix_list]
+        cnt_list = [len(fnmatch.filter(lst, x + '*')) for x in prefix_list]
         return cnt_list
 
     # check RGB
     rgb_counts = {}
     dir_dict = {}
-    for i,f in enumerate(frame_folders):
+    for i, f in enumerate(frame_folders):
         image_folders = glob.glob(os.path.join(f, '*'))
-        for j,h in enumerate(image_folders):
+        for j, h in enumerate(image_folders):
             all_cnt = count_files(h, rgb_prefix)
             k = h.split('/')[-1]
             rgb_counts[k] = all_cnt[0]
@@ -28,6 +32,7 @@ def parse_directory_rgb(path, rgb_prefix='img_'):
 
     print 'frame folder analysis done'
     return dir_dict, rgb_counts
+
 
 def parse_directory_rgb1(path, rgb_prefix):
     """
@@ -38,14 +43,14 @@ def parse_directory_rgb1(path, rgb_prefix):
 
     def count_files(directory, prefix_list):
         lst = os.listdir(directory)
-        cnt_list = [len(fnmatch.filter(lst, x+'*')) for x in prefix_list]
+        cnt_list = [len(fnmatch.filter(lst, x + '*')) for x in prefix_list]
         return cnt_list
 
     # check RGB
     rgb_counts = {}
     flow_counts = {}
     dir_dict = {}
-    for i,f in enumerate(frame_folders):
+    for i, f in enumerate(frame_folders):
         all_cnt = count_files(f, rgb_prefix)
         k = f.split('/')[-1]
         rgb_counts[k] = all_cnt[0]
@@ -57,6 +62,7 @@ def parse_directory_rgb1(path, rgb_prefix):
     print 'frame folder analysis done'
     return dir_dict, rgb_counts
 
+
 def parse_directory_flow(path, flow_x_prefix='flow_x', flow_y_prefix='flow_y'):
     """
     Parse directories holding extracted frames from standard benchmarks
@@ -66,13 +72,13 @@ def parse_directory_flow(path, flow_x_prefix='flow_x', flow_y_prefix='flow_y'):
 
     def count_files(directory, prefix_list):
         lst = os.listdir(directory)
-        cnt_list = [len(fnmatch.filter(lst, x+'*')) for x in prefix_list]
+        cnt_list = [len(fnmatch.filter(lst, x + '*')) for x in prefix_list]
         return cnt_list
 
     # check RGB
     flow_counts = {}
     dir_dict = {}
-    for i,f in enumerate(frame_folders):
+    for i, f in enumerate(frame_folders):
         all_cnt = count_files(f, (flow_x_prefix, flow_y_prefix))
         x_cnt = all_cnt[0]
         y_cnt = all_cnt[1]
@@ -83,7 +89,6 @@ def parse_directory_flow(path, flow_x_prefix='flow_x', flow_y_prefix='flow_y'):
         dir_dict[k] = f
         if i % 200 == 0:
             print '{} videos parsed'.format(i)
-
 
     print 'frame folder analysis done'
     return dir_dict, flow_counts
@@ -98,14 +103,14 @@ def parse_directory(path, rgb_prefix='img_', flow_x_prefix='flow_x_', flow_y_pre
 
     def count_files(directory, prefix_list):
         lst = os.listdir(directory)
-        cnt_list = [len(fnmatch.filter(lst, x+'*')) for x in prefix_list]
+        cnt_list = [len(fnmatch.filter(lst, x + '*')) for x in prefix_list]
         return cnt_list
 
     # check RGB
     rgb_counts = {}
     flow_counts = {}
     dir_dict = {}
-    for i,f in enumerate(frame_folders):
+    for i, f in enumerate(frame_folders):
         all_cnt = count_files(f, (rgb_prefix, flow_x_prefix, flow_y_prefix))
         k = f.split('/')[-1]
         rgb_counts[k] = all_cnt[0]
@@ -114,7 +119,7 @@ def parse_directory(path, rgb_prefix='img_', flow_x_prefix='flow_x_', flow_y_pre
         x_cnt = all_cnt[1]
         y_cnt = all_cnt[2]
         if x_cnt != y_cnt:
-            raise ValueError('x and y direction have different number of flow images. video: '+f)
+            raise ValueError('x and y direction have different number of flow images. video: ' + f)
         flow_counts[k] = x_cnt
         if i % 200 == 0:
             print '{} videos parsed'.format(i)
@@ -144,23 +149,26 @@ def build_split_list(split_tuple, frame_info, split_idx, shuffle=False):
     return (train_rgb_list, test_rgb_list), (train_flow_list, test_flow_list)
 
 
-## Dataset specific split file parse
+# Dataset specific split file parse
 def parse_kinetics():
     def line2rec(line):
         items = line.strip().split()
         vid = items[0]
         label = int(items[1])
         return vid, label
+
     val_list = [line2rec(line) for line in open('data/kinetics/val_list2.txt')]
     return val_list
+
 
 def parse_kinetics_test(test_list):
     test_list = [line.strip() for line in open(test_list)]
     return test_list
 
+
 def parse_ucf_splits():
     class_ind = [x.strip().split() for x in open('data/ucf101_splits/classInd.txt')]
-    class_mapping = {x[1]:int(x[0])-1 for x in class_ind}
+    class_mapping = {x[1]: int(x[0]) - 1 for x in class_ind}
 
     def line2rec(line):
         items = line.strip().split('/')
@@ -209,3 +217,14 @@ def parse_hmdb51_splits():
         ]
         splits.append((train_list, test_list))
     return splits
+
+
+split_parsers = dict()
+split_parsers['ucf101'] = parse_ucf_splits
+split_parsers['hmdb51'] = parse_hmdb51_splits
+split_parsers['kinetics'] = parse_kinetics
+
+
+def parse_split_file(dataset):
+    sp = split_parsers[dataset]
+    return sp()

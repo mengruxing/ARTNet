@@ -1,6 +1,10 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 """
 This module provides our implementation of different functions to do video-level classification and stream fusion
 """
+
 import numpy as np
 from metrics import softmax
 
@@ -44,9 +48,9 @@ def sliding_window_aggregation_func(score, spans=[1, 2, 4, 8, 16], overlap=0.2, 
 
     for t_span in spans:
         span = t_span * fps
-        step = int(np.ceil(span * (1-overlap)))
-        local_agg = [frm_max[i: i+span].max(axis=0) for i in xrange(0, frm_max.shape[0], step)]
-        k = max(15, len(local_agg)/4)
+        step = int(np.ceil(span * (1 - overlap)))
+        local_agg = [frm_max[i: i + span].max(axis=0) for i in xrange(0, frm_max.shape[0], step)]
+        k = max(15, len(local_agg) / 4)
         slide_score.append(top_k_pool(np.array(local_agg), k))
 
     out_score = np.mean(slide_score, axis=0)

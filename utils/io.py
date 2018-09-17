@@ -1,4 +1,8 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import numpy as np
+
 
 def flow_stack_oversample(flow_stack, crop_dims):
     """
@@ -15,23 +19,21 @@ def flow_stack_oversample(flow_stack, crop_dims):
     h_indices = (0, im_shape[0] - crop_dims[0])
     w_indices = (0, im_shape[1] - crop_dims[1])
 
-    h_center_offset = (im_shape[0] - crop_dims[0])/2
-    w_center_offset = (im_shape[1] - crop_dims[1])/2
+    h_center_offset = (im_shape[0] - crop_dims[0]) / 2
+    w_center_offset = (im_shape[1] - crop_dims[1]) / 2
 
     crop_ix = np.empty((5, 4), dtype=int)
 
     cnt = 0
     for i in h_indices:
         for j in w_indices:
-            crop_ix[cnt, :] = (i, j, i+crop_dims[0], j+crop_dims[1])
+            crop_ix[cnt, :] = (i, j, i + crop_dims[0], j + crop_dims[1])
             cnt += 1
-    crop_ix[4, :] = [h_center_offset, w_center_offset,
-                     h_center_offset+crop_dims[0], w_center_offset+crop_dims[1]]
+    crop_ix[4, :] = [h_center_offset, w_center_offset, h_center_offset + crop_dims[0], w_center_offset + crop_dims[1]]
 
-    crop_ix = np.tile(crop_ix, (2,1))
+    crop_ix = np.tile(crop_ix, (2, 1))
 
-    crops = np.empty((10, flow_stack.shape[0], crop_dims[0], crop_dims[1]),
-                     dtype=flow_stack.dtype)
+    crops = np.empty((10, flow_stack.shape[0], crop_dims[0], crop_dims[1]), dtype=flow_stack.dtype)
 
     for ix in xrange(10):
         cp = crop_ix[ix]
@@ -39,7 +41,8 @@ def flow_stack_oversample(flow_stack, crop_dims):
     crops[5:] = crops[5:, :, :, ::-1]
     crops[5:, range(0, stack_depth, 2), ...] = 255 - crops[5:, range(0, stack_depth, 2), ...]
     return crops
-    
+
+
 def c3d_rgb_stack_oversample(flow_stack, crop_dims):
     """
     This function performs oversampling on flow stacks.
@@ -55,29 +58,28 @@ def c3d_rgb_stack_oversample(flow_stack, crop_dims):
     h_indices = (0, im_shape[0] - crop_dims[0])
     w_indices = (0, im_shape[1] - crop_dims[1])
 
-    h_center_offset = (im_shape[0] - crop_dims[0])/2
-    w_center_offset = (im_shape[1] - crop_dims[1])/2
+    h_center_offset = (im_shape[0] - crop_dims[0]) / 2
+    w_center_offset = (im_shape[1] - crop_dims[1]) / 2
 
     crop_ix = np.empty((5, 4), dtype=int)
 
     cnt = 0
     for i in h_indices:
         for j in w_indices:
-            crop_ix[cnt, :] = (i, j, i+crop_dims[0], j+crop_dims[1])
+            crop_ix[cnt, :] = (i, j, i + crop_dims[0], j + crop_dims[1])
             cnt += 1
-    crop_ix[4, :] = [h_center_offset, w_center_offset,
-                     h_center_offset+crop_dims[0], w_center_offset+crop_dims[1]]
+    crop_ix[4, :] = [h_center_offset, w_center_offset, h_center_offset + crop_dims[0], w_center_offset + crop_dims[1]]
 
-    crop_ix = np.tile(crop_ix, (2,1))
+    crop_ix = np.tile(crop_ix, (2, 1))
 
-    crops = np.empty((10, flow_stack.shape[0], crop_dims[0], crop_dims[1], 3),
-                     dtype=flow_stack.dtype)
+    crops = np.empty((10, flow_stack.shape[0], crop_dims[0], crop_dims[1], 3), dtype=flow_stack.dtype)
 
     for ix in xrange(10):
         cp = crop_ix[ix]
-        crops[ix] = flow_stack[:, cp[0]:cp[2], cp[1]:cp[3],:]
+        crops[ix] = flow_stack[:, cp[0]:cp[2], cp[1]:cp[3], :]
     crops[5:] = crops[5:, :, :, ::-1, :]
     return crops
+
 
 def c3d_flow_stack_oversample(flow_stack, crop_dims):
     """
@@ -94,34 +96,33 @@ def c3d_flow_stack_oversample(flow_stack, crop_dims):
     h_indices = (0, im_shape[0] - crop_dims[0])
     w_indices = (0, im_shape[1] - crop_dims[1])
 
-    h_center_offset = (im_shape[0] - crop_dims[0])/2
-    w_center_offset = (im_shape[1] - crop_dims[1])/2
+    h_center_offset = (im_shape[0] - crop_dims[0]) / 2
+    w_center_offset = (im_shape[1] - crop_dims[1]) / 2
 
     crop_ix = np.empty((5, 4), dtype=int)
 
     cnt = 0
     for i in h_indices:
         for j in w_indices:
-            crop_ix[cnt, :] = (i, j, i+crop_dims[0], j+crop_dims[1])
+            crop_ix[cnt, :] = (i, j, i + crop_dims[0], j + crop_dims[1])
             cnt += 1
-    crop_ix[4, :] = [h_center_offset, w_center_offset,
-                     h_center_offset+crop_dims[0], w_center_offset+crop_dims[1]]
+    crop_ix[4, :] = [h_center_offset, w_center_offset, h_center_offset + crop_dims[0], w_center_offset + crop_dims[1]]
 
-    crop_ix = np.tile(crop_ix, (2,1))
+    crop_ix = np.tile(crop_ix, (2, 1))
 
-    crops = np.empty((10, flow_stack.shape[0]/2, crop_dims[0], crop_dims[1], 2),
-                     dtype=flow_stack.dtype)
+    crops = np.empty((10, flow_stack.shape[0] / 2, crop_dims[0], crop_dims[1], 2), dtype=flow_stack.dtype)
     flow_stack_x = flow_stack[::2]
     flow_stack_y = flow_stack[1::2]
 
     for ix in xrange(10):
         cp = crop_ix[ix]
-        crops[ix,:,:,:,0] = flow_stack_x[:, cp[0]:cp[2], cp[1]:cp[3]]
-        crops[ix,:,:,:,1] = flow_stack_y[:, cp[0]:cp[2], cp[1]:cp[3]]
+        crops[ix, :, :, :, 0] = flow_stack_x[:, cp[0]:cp[2], cp[1]:cp[3]]
+        crops[ix, :, :, :, 1] = flow_stack_y[:, cp[0]:cp[2], cp[1]:cp[3]]
 
     crops[5:, :, :, :, 0] = 255 - crops[5:, :, :, ::-1, 0]
     crops[5:, :, :, :, 1] = crops[5:, :, :, ::-1, 1]
     return crops
+
 
 def rgb_oversample(image, crop_dims):
     """
@@ -149,21 +150,17 @@ def rgb_oversample(image, crop_dims):
         for j in w_indices:
             crops_ix[curr] = (i, j, i + crop_dims[0], j + crop_dims[1])
             curr += 1
-    crops_ix[4] = np.tile(im_center, (1, 2)) + np.concatenate([
-        -crop_dims / 2.0,
-         crop_dims / 2.0
-    ])
+    crops_ix[4] = np.tile(im_center, (1, 2)) + np.concatenate([-crop_dims / 2.0, crop_dims / 2.0])
     crops_ix = np.tile(crops_ix, (2, 1))
 
     # Extract crops
-    crops = np.empty((10 , crop_dims[0], crop_dims[1],
-                      im_shape[-1]), dtype=np.float32)
+    crops = np.empty((10, crop_dims[0], crop_dims[1], im_shape[-1]), dtype=np.float32)
 
     ix = 0
     for crop in crops_ix:
         crops[ix] = image[crop[0]:crop[2], crop[1]:crop[3], :]
         ix += 1
-    crops[ix-5:ix] = crops[ix-5:ix, :, ::-1, :]  # flip for mirrors
+    crops[ix - 5:ix] = crops[ix - 5:ix, :, ::-1, :]  # flip for mirrors
     return crops
 
 
@@ -194,8 +191,7 @@ def fast_list2arr(data, offset=None, dtype=None):
     :return: numpy.array
     """
     num = len(data)
-    out_data = np.empty((num,)+data[0].shape, dtype=dtype if dtype else data[0].dtype)
+    out_data = np.empty((num,) + data[0].shape, dtype=dtype if dtype else data[0].dtype)
     for i in xrange(num):
         out_data[i] = data[i] - offset if offset else data[i]
     return out_data
-
